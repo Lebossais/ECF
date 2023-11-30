@@ -7,7 +7,7 @@ create database if not exists Sparadrap;
 
 use Sparadrap;
 
-drop table if exists regroupe;
+drop table if exists Panier;
 drop table if exists Achat;
 drop table if exists compose;
 drop table if exists Ordonnance;
@@ -44,7 +44,7 @@ create table if not exists Personne
 	Per_ID 				int not null auto_increment,
 	Per_Prenom 			char (15) not null,
 	Per_Nom 			char (15) not null,
-	Per_Telephone 		numeric (10) not null,
+	Per_Telephone 		varchar (10) not null,
 	Per_Email 			varchar (50) not null,
 	Adr_ID 		int not null,
 		primary key (Per_ID),
@@ -59,7 +59,7 @@ create table if not exists Entreprise
 (
 	Ent_ID 					int not null auto_increment,
 	Ent_Raison_Sociale 		varchar (25) not null,
-	Ent_Telephone 			numeric (10) not null,
+	Ent_Telephone 			varchar (10) not null,
 	Ent_Email				varchar(40) not null,
 	Adr_ID 					int not null,
 		primary key (Ent_ID),
@@ -74,7 +74,7 @@ create table if not exists Entreprise
 create table if not exists Medecin 
 (
 	Med_ID 				int not null auto_increment,
-	Med_Aggrement 		numeric(11) not null,
+	Med_Aggrement 		varchar(11) not null,
 	Per_ID 				int not null,
 		primary key (Med_ID),
 	constraint
@@ -101,7 +101,7 @@ create table if not exists Mutuelle
 (
 	Mut_ID 				int not null auto_increment,
 	Mut_Departement 	numeric (3) not null,
-	Mut_Prise_EnC_harge 	numeric (2) not null,
+	Mut_Prise_En_Charge 	numeric (2) not null,
 	Ent_ID 				int not null,
 		primary key (Mut_ID),
 	constraint
@@ -115,15 +115,15 @@ create table if not exists Mutuelle
 Create table if not exists Client 
 (
 	Cli_ID 					int not null auto_increment,
-	Cli_DateNaissance 		date not null,
-	Cli_NumSecu 			numeric(15) not null,
+	Cli_Date_Naissance 		date not null,
+	Cli_Numero_Secu 			numeric(15) not null,
 	Per_ID 					int not null,
 	Med_ID 					int not null,
 	Spe_ID 					int,
 	Mut_ID 					int not null,
 		primary key (Cli_ID),
 	constraint
-		foreign key (Per_ID) references Personne (Per_ID) on delete restrict on update restrict,
+		foreign key (Per_ID) references Personne (Per_ID) on delete cascade on update restrict,
 		foreign key (Med_ID) references Medecin (Med_ID) on delete restrict on update restrict,
 		foreign key (Spe_ID) references Specialiste (Spe_ID) on delete restrict on update restrict,
 		foreign key (Mut_ID) references Mutuelle (Mut_ID) on delete restrict on update restrict
@@ -167,7 +167,7 @@ create table if not exists Ordonnance
 	Spe_ID 			int,
 		primary key (Ord_ID),
 	constraint
-		foreign key (Cli_ID) references Client(Cli_ID) on delete restrict on update restrict,
+		foreign key (Cli_ID) references Client(Cli_ID) on delete cascade on update restrict,
 		foreign key (Med_ID) references Medecin(Med_ID) on delete restrict on update restrict,
 		foreign key (Spe_ID) references Specialiste(Spe_ID) on delete restrict on update restrict
 );
@@ -182,7 +182,7 @@ Create table Compose
     Compose_Qte		int not null, 
 		primary key(Ord_ID, Medi_ID),
 	constraint 
-		foreign key (Ord_ID) references Ordonnance(Ord_ID)on delete restrict on update restrict,
+		foreign key (Ord_ID) references Ordonnance(Ord_ID)on delete cascade on update restrict,
 		foreign key (Medi_ID) references Medicament(Medi_ID)on delete restrict on update restrict
 );
 
@@ -197,22 +197,22 @@ create table if not exists Achat
     Ord_ID			int,
 		primary key (Achat_ID),
 	constraint
-		foreign key (Cli_ID) references Client (Cli_ID) on delete restrict on update restrict,
-        foreign key (Ord_ID) references Ordonnance(Ord_ID) on delete restrict on update restrict
+		foreign key (Cli_ID) references Client (Cli_ID) on delete cascade on update restrict,
+        foreign key (Ord_ID) references Ordonnance(Ord_ID) on delete cascade on update restrict
 );
 
 /*------------------------------------------*/
 /* TABLE : Regroupe							*/
 /*------------------------------------------*/
-Create table Regroupe 
+Create table Panier 
 (
+	Achat_ID 		int not null,
 	Medi_ID 		int not null,
-    Achat_ID 		int not null,
-    Regroupe_Qte 	int not null,
+    Panier_Qte 	int not null,
 		primary key (Medi_ID, Achat_ID),
 	constraint
 		foreign key (Medi_ID) references Medicament(Medi_ID) on delete restrict on update restrict,
-        foreign key (Achat_ID) references Achat(Achat_ID) on delete restrict on update restrict
+        foreign key (Achat_ID) references Achat(Achat_ID) on delete cascade on update restrict
 );
 
 /*--------------------------------------*/
@@ -260,7 +260,7 @@ VALUES
 	(1, 59, 85, 1),
     (2, 62, 60, 2);
 
-Insert into Client (Cli_ID, Cli_DateNaissance, Cli_NumSecu, Per_ID, Med_ID, Spe_ID, Mut_ID) 
+Insert into Client (Cli_ID, Cli_Date_Naissance, Cli_Numero_Secu, Per_ID, Med_ID, Spe_ID, Mut_ID) 
 VALUES 
 	(1, '1998-05-05', "2012345678", 1, 1, 1, 1),
     (2, '1986-09-09', "2012345689", 2, 1, 2, 1),
@@ -270,15 +270,19 @@ Insert into Categorie (Cat_ID, Cat_Categorie)
 VALUES 
 	(1, "Analegesique"),
     (2, "Antibiotique"),
-    (3, "Antiinflammatoire"),
+    (3, "Anti inflammatoire"),
     (4, "Corticoides");
 
 Insert into Medicament (Medi_ID, Medi_Nom, Medi_Prix, Medi_DateMiseService, Cat_ID) 
 VALUES 
 	(1, "Doliprane", 5.00, '2001-08-27', 1),
-    (2, "Amoxicilline", 3.00, '2010-08-05', 2),
-    (3, "Xydol", 6.00, '2008-12-14', 3),
-    (4, "Corisol", 10.00, '1950-01-01', 4);
+    (2, "Aspirine", 4.00, '2000-06-25', 1),
+    (3, "Amoxicilline", 3.00, '2010-08-05', 2),
+    (4, "Oracilline", 9.00, '2009-09-17', 2),
+    (5, "Xydol", 6.00, '2008-12-14', 3),
+    (6, "Advil", 5.00, '2005-06-22',3),
+    (7, "Solupred", 8.00, '2003-04-12',4),
+    (8, "Cortisol", 10.00, '1950-01-01', 4);
 
 Insert into Ordonnance (Ord_ID, Ord_Num, Ord_Date, Cli_ID, Med_ID, Spe_ID) 
 VALUES 
@@ -316,9 +320,15 @@ VALUES
     (7, '2023-10-29', 2, 5),
     (8, '2023-10-30', 3, 6);
     
-Insert into Regroupe (Achat_ID, Medi_ID, Regroupe_Qte) 
+Insert into Panier (Achat_ID, Medi_ID, Panier_Qte) 
 VALUES 
+	(1, 1, 5),
+    (2, 2, 6),
+    (3, 3, 4),
 	(4, 2, 2),
-    (5, 1, 3);
+    (5, 2, 3),
+    (4, 4, 5),
+    (5, 1, 4),
+    (6, 2, 3);
 
 SET FOREIGN_KEY_CHECKS=1;
