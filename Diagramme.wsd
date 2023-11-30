@@ -1,0 +1,146 @@
+@startuml
+
+package Principal <<folder>> {
+
+ interface Outil_Interne_Gestion {
+    - Medecin
+    - Client
+    - Enregistrer()
+    - Afficher_Tout_Achat()
+    - Afficher_Ordonnances_Par_Medecin() 
+    - Afficher_Stock()
+ }
+
+ class Pharmacien {
+    - getters()
+    - setters()
+ }
+}
+
+Package People <<Folder>> {
+class Client {
+    - Personne : Personne
+    - Numero_Securite_Social : int 
+    - Date_De_Naissance : Date
+    - Mutuelle : Mutuelle 
+    - Medecin_Traitant : Medecin_Traitant
+    - Specialiste : Specialiste
+    - getters()
+    - setters()
+}
+note left : Peut avoir un ou plusieurs Specialiste(s)
+
+class Medecin {
+    - Personne : Personne
+    - Aggrement : int 
+    - getters()
+    - setters()
+}
+note right : Peut avoir un ou plusieurs patients
+
+class Specialiste {
+    - Personne : Personne
+    - Specialite : String 
+    - getters()
+    - setters()
+}
+
+
+class Mutuelle {
+    - Personne : Personne
+    - Departement : int
+    - Prise_En_Charge : int 
+    - getters()
+    - setters()
+}
+}
+Package Gestion <<Folder>> {
+
+Interface Stock {
+    - JTable : Medicament
+    - getters()
+    - setters()
+}
+
+class Medicament {
+    - Nom : String
+    - Categorie : int 
+    - Prix : int
+    - Date : Date
+    - Quantite : Date
+    - getters()
+    - setters()
+}
+
+enum Categorie {
+    - Anti_Inflammatoires
+    - Antiviraux
+    - Antibiotiques
+    - Autres
+}
+
+class Ordonnance {
+    - Date : Date
+    - Nom_Medecin : String
+    - Nom_Client : String
+    - Liste_Medicament : String
+    - Nom_Specialiste : String
+    - getters()
+    - setters()
+}
+note left : Nom_Specialiste peut être null
+}
+Package Utilitaires <<Folder>> {
+
+abstract Personne {
+    - Nom : String
+    - Prenom : String
+    - Adresse : Adresse
+    - Telephone: int
+    - Email : Email
+    - getters()
+    - setters()
+}
+
+class Adresse {
+    - Numero_rue : int
+    - Nom_rue : String 
+    - Code_postal : int 
+    - Ville : int
+    - getters()
+    - setters()
+    - toString()
+}
+}
+
+Categorie -|> Medicament
+
+Outil_Interne_Gestion <|-- Pharmacien
+Outil_Interne_Gestion --|> Pharmacien
+
+Pharmacien <|-- Client
+Medecin - Client
+Client -- Specialiste
+Client -- Mutuelle
+
+
+Adresse -|> Personne
+Client --|> Personne #Red
+Medecin --|> Personne #Red
+Specialiste --|> Personne #Red
+Mutuelle --|> Personne #Red
+
+Ordonnance <|-- Medecin
+Specialiste --|> Ordonnance
+Ordonnance <|-- Client
+
+Stock -|> Outil_Interne_Gestion
+
+Medicament -|> Stock
+
+Pharmacien <|- Ordonnance
+
+
+
+
+@enduml
